@@ -2,6 +2,7 @@ namespace RssReader.Library
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
 
@@ -34,12 +35,33 @@ namespace RssReader.Library
         {
             HttpClient client = new HttpClient();
             var result = await client.GetAsync(Url);
-            return await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                return await result.Content.ReadAsStringAsync();
+            }
+
+            Console.WriteLine($"Feed {Name} at {Url} failed with status {result.StatusCode} ({(int)result.StatusCode}).");
+            return null;
         }
 
-        public async Task<List<FeedItem>> ReadItems()
+        public async Task<IEnumerable<FeedItem>> ReadItems()
         {
-            var feed = await ReadFeedAsync();
+            string feed;
+            try
+            {
+                feed = await ReadFeedAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Failed to read {Name} at {Url}.");
+                Console.WriteLine(e);
+                return Enumerable.Empty<FeedItem>();
+            }
+
+            if (feed == null)
+            {
+                return Enumerable.Empty<FeedItem>();
+            }
             return FeedParser.ParseFeed(feed, Name);
         }
     }

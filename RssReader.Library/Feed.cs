@@ -14,7 +14,7 @@ namespace RssReader.Library
             Info = feedInfo;
         }
 
-        public void Add(List<FeedItem> feedItems)
+        public void Add(IEnumerable<FeedItem> feedItems)
         {
             Dictionary<string, FeedItem> dict = new Dictionary<string, FeedItem>();
             foreach (var item in Items)

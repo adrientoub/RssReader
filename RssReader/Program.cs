@@ -15,7 +15,7 @@ namespace RssReader
 
             foreach (var feed in feeds.Feeds)
             {
-                var items = await feed.Info.ReadItems();
+                IEnumerable<FeedItem> items = await feed.Info.ReadItems();
                 feed.Add(items);
             }
         }

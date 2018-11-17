@@ -11,13 +11,7 @@ namespace RssReader
     {
         static async Task Main(string[] args)
         {
-            var feeds = new FeedList
-            {
-                Feeds = new List<Feed>()
-            };
-            feeds.Feeds.Add(new Feed(new FeedInfo("Engadget", "https://www.engadget.com/rss.xml")));
-            feeds.Feeds.Add(new Feed(new FeedInfo("JeuxVideo.com", "http://www.jeuxvideo.com/rss/rss.xml")));
-            feeds.SaveFeeds("feeds.csv");
+            var feeds = FeedList.ReadFeeds("rss.csv");
 
             foreach (var feed in feeds.Feeds)
             {

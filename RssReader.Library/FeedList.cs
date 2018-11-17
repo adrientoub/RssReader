@@ -25,6 +25,16 @@
             }
         }
 
+        public static FeedList ReadFeedsOpml(string path)
+        {
+            var fileContent = File.ReadAllText(path);
+            List<FeedInfo> records = OpmlParser.ParseFeed(fileContent);
+            return new FeedList
+            {
+                Feeds = records.Select(info => new Feed(info)).ToList(),
+            };
+        }
+
         public void SaveFeeds(string path)
         {
             using (var fileWriter = File.CreateText(path))

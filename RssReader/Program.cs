@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using RssReader.Library;
@@ -13,11 +11,13 @@ namespace RssReader
         {
             var feeds = FeedList.ReadFeeds("rss.csv");
 
-            foreach (var feed in feeds.Feeds)
+            var result = feeds.Feeds.Select(async feed =>
             {
-                IEnumerable<FeedItem> items = await feed.Info.ReadItems();
+                IEnumerable<FeedItem> items = await feed.ReadItems();
                 feed.Add(items);
-            }
+                feed.Save();
+            });
+            await Task.WhenAll(result);
         }
     }
 }

@@ -14,7 +14,8 @@ namespace RssReader.Library
 
         public static IEnumerable<FeedItem> ParseFeed(string content, string feedName)
         {
-            File.WriteAllText($"output-{Regex.Replace(feedName, @"[^A-Za-z0-9-]+", "")}.xml", content);
+            Directory.CreateDirectory("output");
+            File.WriteAllText($"output/{Regex.Replace(feedName, @"[^A-Za-z0-9-]+", "")}.xml", content);
             var filtered = NamespaceRegex.Replace(content, "");
             var xmlDocument = new XmlDocument();
             try

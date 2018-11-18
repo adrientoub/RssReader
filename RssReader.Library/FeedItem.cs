@@ -12,6 +12,7 @@ namespace RssReader.Library
 
         public string Title { get; set; }
 
+        [TypeConverter(typeof(Base64Gzip))]
         public string Description { get; set; }
 
         public string Link { get; set; }

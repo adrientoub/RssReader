@@ -1,21 +1,23 @@
-namespace RssReader.Library
+namespace RssReader.Library.FeedParsers
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using System.Xml;
 
-    public static class FeedParser
+    public class CustomFeedParser: IFeedParser
     {
         private const string NamespaceFilter = @"xmlns=""([^""]+)""|xsi(:\w+)?=""([^""]+)""";
         private static readonly Regex NamespaceRegex = new Regex(NamespaceFilter);
 
-        public static IEnumerable<FeedItem> ParseFeed(string content, string feedName)
+        public async Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string feedName)
         {
             Directory.CreateDirectory("output");
             File.WriteAllText($"output/{Regex.Replace(feedName, @"[^A-Za-z0-9-]+", "")}.xml", content);
+            await Task.Yield();
             var filtered = NamespaceRegex.Replace(content, "");
             var xmlDocument = new XmlDocument();
             try
@@ -40,7 +42,7 @@ namespace RssReader.Library
             {
                 return ParseAtom(xmlDocument, feedName);
             }
-            return new List<FeedItem>();
+            return Enumerable.Empty<FeedItem>();
         }
 
         private static List<FeedItem> ParseAtom(XmlDocument xmlDocument, string feedName)
@@ -78,7 +80,7 @@ namespace RssReader.Library
             return feedItems;
         }
 
-        public static List<FeedItem> ParseRss(XmlDocument xmlDocument, string feedName)
+        private static List<FeedItem> ParseRss(XmlDocument xmlDocument, string feedName)
         {
             XmlNodeList xmlNodeList = xmlDocument.GetElementsByTagName("item");
             List<FeedItem> feedItems = new List<FeedItem>();

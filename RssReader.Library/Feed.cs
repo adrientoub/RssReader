@@ -7,6 +7,7 @@ namespace RssReader.Library
     using System.Net.Http;
     using System.Threading.Tasks;
     using CsvHelper;
+    using RssReader.Library.FeedParsers;
 
     public class Feed
     {
@@ -34,7 +35,7 @@ namespace RssReader.Library
             return null;
         }
 
-        public async Task<IEnumerable<FeedItem>> ReadItems()
+        public async Task<IEnumerable<FeedItem>> ReadItems(IFeedParser feedParser)
         {
             string feed;
             try
@@ -52,7 +53,7 @@ namespace RssReader.Library
             {
                 return Enumerable.Empty<FeedItem>();
             }
-            return FeedParser.ParseFeed(feed, Info.Name);
+            return await feedParser.ParseFeedAsync(feed, Info.Name);
         }
 
         public void Add(IEnumerable<FeedItem> feedItems)

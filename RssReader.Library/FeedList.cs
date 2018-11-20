@@ -8,7 +8,7 @@
 
     public class FeedList
     {
-        public List<Feed> Feeds { get; set; }
+        public List<Feed> Feeds { get; set; } = new List<Feed>();
 
         public static FeedList ReadFeeds(string path)
         {

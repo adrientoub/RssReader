@@ -1,19 +1,33 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using RssReader.Library;
-
-namespace RssReader
+﻿namespace RssReader
 {
-    class Program
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using RssReader.Library;
+    using RssReader.Library.FeedParsers;
+
+    public class Program
     {
         static async Task Main(string[] args)
         {
-            var feeds = FeedList.ReadFeeds("rss.csv");
+            // IFeedParser parser = new CustomFeedParser();
+            IFeedParser parser = new MicrosoftFeedParser();
+            FeedList feeds;
+            try
+            {
+                feeds = FeedList.ReadFeeds("rss.csv");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.Read();
+                return;
+            }
 
             var result = feeds.Feeds.Select(async feed =>
             {
-                IEnumerable<FeedItem> items = await feed.ReadItems();
+                IEnumerable<FeedItem> items = await feed.ReadItems(parser);
                 feed.Add(items);
                 feed.Save();
             });

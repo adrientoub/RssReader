@@ -1,6 +1,7 @@
 namespace RssReader.Library
 {
     using System.Text.RegularExpressions;
+    using CsvHelper.Configuration.Attributes;
 
     public class FeedInfo
     {
@@ -12,6 +13,7 @@ namespace RssReader.Library
 
         private static readonly Regex NameCleaner = new Regex(@"[^A-Za-z0-9-]+");
 
+        [Ignore]
         public string CleanName => NameCleaner.Replace(Name, "");
 
         public FeedInfo()

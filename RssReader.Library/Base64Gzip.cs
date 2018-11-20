@@ -42,7 +42,7 @@
                     zipStream.CopyTo(outputStream);
                 }
 
-                return outputStream.ToArray().ToString();
+                return System.Text.Encoding.UTF8.GetString(outputStream.ToArray());
             }
         }
     }

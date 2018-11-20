@@ -54,7 +54,7 @@
                         ISyndicationItem item = await feedReader.ReadItem();
                         items.Add(new FeedItem()
                         {
-                            Date = item.LastUpdated,
+                            Date = item.LastUpdated == default(DateTimeOffset) ? item.Published : item.LastUpdated,
                             Description = item.Description.Trim(),
                             FeedName = feedName,
                             Guid = item.Id,

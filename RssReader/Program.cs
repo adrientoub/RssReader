@@ -25,6 +25,7 @@
                 return;
             }
 
+            feeds.Load();
             var result = feeds.Feeds.Select(async feed =>
             {
                 IEnumerable<FeedItem> items = await feed.ReadItems(parser);

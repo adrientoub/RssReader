@@ -17,6 +17,8 @@ namespace RssReader.Library
 
         private readonly HashSet<string> _loadedMonths = new HashSet<string>();
 
+        private static readonly HttpClient Client = new HttpClient();
+
         public Feed(FeedInfo feedInfo)
         {
             Info = feedInfo;
@@ -24,14 +26,14 @@ namespace RssReader.Library
 
         public async Task<string> ReadFeedAsync()
         {
-            HttpClient client = new HttpClient();
-            var result = await client.GetAsync(Info.Url);
+            var result = await Client.GetAsync(Info.Url);
             if (result.IsSuccessStatusCode)
             {
                 return await result.Content.ReadAsStringAsync();
             }
 
-            Console.WriteLine($"Feed {Info.Name} at {Info.Url} failed with status {result.StatusCode} ({(int)result.StatusCode}).");
+            Console.WriteLine(
+                $"Feed {Info.Name} at {Info.Url} failed with status {result.StatusCode} ({(int) result.StatusCode}).");
             return null;
         }
 
@@ -53,6 +55,7 @@ namespace RssReader.Library
             {
                 return Enumerable.Empty<FeedItem>();
             }
+
             return await feedParser.ParseFeedAsync(feed, Info.Name);
         }
 
@@ -64,6 +67,7 @@ namespace RssReader.Library
             {
                 dict.Add(item.Guid, item);
             }
+
             foreach (var item in feedItems)
             {
                 if (dict.ContainsKey(item.Guid))
@@ -75,6 +79,7 @@ namespace RssReader.Library
                     dict.Add(item.Guid, item);
                 }
             }
+
             Items = dict.Values.OrderBy(item => item.Date).ToList();
         }
 
@@ -84,7 +89,8 @@ namespace RssReader.Library
             // TODO: use a base path
             // TODO: gzip when all read and older than 6 months
 
-            IEnumerable<IGrouping<(int year, int month), FeedItem>> grouped = Items.GroupBy(item => (item.Date.Year, item.Date.Month));
+            IEnumerable<IGrouping<(int year, int month), FeedItem>> grouped =
+                Items.GroupBy(item => (item.Date.Year, item.Date.Month));
             foreach (IGrouping<(int year, int month), FeedItem> feedItems in grouped)
             {
                 if (!_loadedMonths.Contains(MonthKeyName(feedItems.Key.year, feedItems.Key.month)))
@@ -111,16 +117,17 @@ namespace RssReader.Library
             Directory.CreateDirectory(directoryName);
         }
 
-        private void LoadMonth(DateTimeOffset itemDate)
+        public void LoadMonth(int year, int month)
         {
-            _loadedMonths.Add(MonthKeyName(itemDate));
-            string feedPath = FeedPath(itemDate);
+            _loadedMonths.Add(MonthKeyName(year, month));
+            string feedPath = FeedPath(year, month);
             // TODO: add ability to read from external filesystem (blob)
             // TODO: add ability to read gziped content
             if (!File.Exists(feedPath))
             {
                 return;
             }
+
             using (var fileReader = File.OpenText(feedPath))
             {
                 using (var csvReader = new CsvReader(fileReader))

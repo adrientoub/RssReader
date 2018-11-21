@@ -21,6 +21,8 @@ namespace RssReader.Library
 
         private Dictionary<string, FeedItem> _uniqueItems = new Dictionary<string, FeedItem>();
 
+        private HashSet<(int year, int month)> _toSave = new HashSet<(int year, int month)>();
+
         public Feed(FeedInfo feedInfo)
         {
             Info = feedInfo;
@@ -77,11 +79,15 @@ namespace RssReader.Library
                 }
                 else
                 {
+                    _toSave.Add((item.Date.Year, item.Date.Month));
                     _uniqueItems.Add(item.Guid, item);
                 }
             }
 
-            Items = _uniqueItems.Values.OrderBy(item => item.Date).ToList();
+            if (_toSave.Any())
+            {
+                Items = _uniqueItems.Values.OrderBy(item => item.Date).ToList();
+            }
         }
 
         public void Save()
@@ -92,7 +98,8 @@ namespace RssReader.Library
 
             IEnumerable<IGrouping<(int year, int month), FeedItem>> grouped =
                 Items.GroupBy(item => (item.Date.Year, item.Date.Month));
-            foreach (IGrouping<(int year, int month), FeedItem> feedItems in grouped)
+            foreach (IGrouping<(int year, int month), FeedItem> feedItems in
+                     grouped.Where(group => _toSave.Contains((group.Key.year, group.Key.month))))
             {
                 if (!_loadedMonths.Contains(MonthKeyName(feedItems.Key.year, feedItems.Key.month)))
                 {
@@ -109,6 +116,7 @@ namespace RssReader.Library
                     }
                 }
             }
+            _toSave.Clear();
         }
 
         private void CreateDirectories(string feedPath)

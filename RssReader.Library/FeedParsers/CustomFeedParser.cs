@@ -26,8 +26,7 @@ namespace RssReader.Library.FeedParsers
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error while parsing {feedName}.");
-                Console.WriteLine(e);
+                Console.Error.WriteLine($"Error while parsing {feedName}: {e}.");
                 return Enumerable.Empty<FeedItem>();
             }
             // if RSS
@@ -59,7 +58,7 @@ namespace RssReader.Library.FeedParsers
                 string linkText = null;
                 if (!DateTimeOffset.TryParse(date.InnerText, out DateTimeOffset parsedDate))
                 {
-                    Console.WriteLine($"Impossible to parse date {date.InnerText} in feed {feedName}, defaulting to now.");
+                    Console.Error.WriteLine($"Impossible to parse date {date.InnerText} in feed {feedName}, defaulting to now.");
                     parsedDate = DateTimeOffset.Now;
                 }
                 if (link?.Attributes != null)

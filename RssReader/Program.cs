@@ -20,7 +20,7 @@
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.Error.WriteLine(e);
                 Console.Read();
                 return;
             }

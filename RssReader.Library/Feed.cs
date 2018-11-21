@@ -5,6 +5,7 @@ namespace RssReader.Library
     using System.IO;
     using System.Linq;
     using System.Net.Http;
+    using System.Text;
     using System.Threading.Tasks;
     using CsvHelper;
     using RssReader.Library.FeedParsers;
@@ -30,13 +31,30 @@ namespace RssReader.Library
 
         public async Task<string> ReadFeedAsync()
         {
-            var result = await Client.GetAsync(Info.Url);
-            if (result.IsSuccessStatusCode)
+            HttpResponseMessage result;
+            try
             {
-                return await result.Content.ReadAsStringAsync();
+                result = await Client.GetAsync(Info.Url);
+            }
+            catch (HttpRequestException e)
+            {
+                Console.Error.WriteLine($"Impossible to read from {Info.Name}: {Info.Url} - {e.Message}.");
+                return null;
             }
 
-            Console.WriteLine(
+            if (result.IsSuccessStatusCode)
+            {
+                try
+                {
+                    return await result.Content.ReadAsStringAsync();
+                }
+                catch (InvalidOperationException)
+                {
+                    return Encoding.UTF8.GetString(await result.Content.ReadAsByteArrayAsync());
+                }
+            }
+
+            Console.Error.WriteLine(
                 $"Feed {Info.Name} at {Info.Url} failed with status {result.StatusCode} ({(int) result.StatusCode}).");
             return null;
         }
@@ -50,8 +68,7 @@ namespace RssReader.Library
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to read {Info.Name} at {Info.Url}.");
-                Console.WriteLine(e);
+                Console.Error.WriteLine($"Failed to read {Info.Name} at {Info.Url}: {e}.");
                 return Enumerable.Empty<FeedItem>();
             }
 

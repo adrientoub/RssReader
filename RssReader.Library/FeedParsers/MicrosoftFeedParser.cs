@@ -31,9 +31,9 @@
                     AtomFeedReader feedReader = new AtomFeedReader(xmlReader);
                     return await ReadFeedAsync(feedReader, feedName);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.Error.WriteLine($"Error while reading {feedName}: {e}");
+                    Console.Error.WriteLine($"Error while reading {feedName}: Feed invalid as RSS and Atom.");
                     return Enumerable.Empty<FeedItem>();
                 }
             }

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using CsvHelper;
 
     public class FeedList
@@ -25,9 +26,22 @@
             }
         }
 
-        public void Load()
+        public async Task LoadAsync()
         {
             // TODO: handle blobs...
+            List<(int year, int month)> monthsToLoad = FindMonthsToLoad();
+
+            IEnumerable<Task> tasks = Feeds.Select(feed => Task.Run(() =>
+                monthsToLoad.ForEach(m => feed.LoadMonth(m.year, m.month))
+            ));
+            await Task.WhenAll(tasks);
+            Feeds.ForEach(feed => feed.RebuildDictionary());
+        }
+
+        // TODO: should be abstracted in a storage class to be able to do it with any storage
+        private static List<(int year, int month)> FindMonthsToLoad()
+        {
+            List<(int year, int month)> monthsToLoad = new List<(int year, int month)>();
             foreach (int year in Enumerable.Range(2010, 10)) // Be less specific
             {
                 if (Directory.Exists(year.ToString()))
@@ -37,12 +51,12 @@
                         string dirName = Path.GetFileName(enumerateDirectory);
                         if (int.TryParse(dirName, out int month))
                         {
-                            // TODO: do it async in parallel
-                            Feeds.ForEach(feed => feed.LoadMonth(year, month));
+                            monthsToLoad.Add((year, month));
                         }
                     }
                 }
             }
+            return monthsToLoad;
         }
 
         public static FeedList ReadFeedsOpml(string path)

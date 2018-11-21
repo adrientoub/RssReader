@@ -19,6 +19,8 @@ namespace RssReader.Library
 
         private static readonly HttpClient Client = new HttpClient();
 
+        private Dictionary<string, FeedItem> _uniqueItems = new Dictionary<string, FeedItem>();
+
         public Feed(FeedInfo feedInfo)
         {
             Info = feedInfo;
@@ -59,28 +61,27 @@ namespace RssReader.Library
             return await feedParser.ParseFeedAsync(feed, Info.Name);
         }
 
+        internal void RebuildDictionary()
+        {
+            _uniqueItems = Items.ToDictionary(item => item.Guid);
+        }
+
         public void Add(IEnumerable<FeedItem> feedItems)
         {
-            Dictionary<string, FeedItem> dict = new Dictionary<string, FeedItem>();
             // TODO: load dynamically months where data is to be added.
-            foreach (var item in Items)
-            {
-                dict.Add(item.Guid, item);
-            }
-
             foreach (var item in feedItems)
             {
-                if (dict.ContainsKey(item.Guid))
+                if (_uniqueItems.ContainsKey(item.Guid))
                 {
-                    dict[item.Guid] = item;
+                    _uniqueItems[item.Guid] = item;
                 }
                 else
                 {
-                    dict.Add(item.Guid, item);
+                    _uniqueItems.Add(item.Guid, item);
                 }
             }
 
-            Items = dict.Values.OrderBy(item => item.Date).ToList();
+            Items = _uniqueItems.Values.OrderBy(item => item.Date).ToList();
         }
 
         public void Save()

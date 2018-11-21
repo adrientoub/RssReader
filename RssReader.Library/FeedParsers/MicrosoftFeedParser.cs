@@ -31,8 +31,9 @@
                     AtomFeedReader feedReader = new AtomFeedReader(xmlReader);
                     return await ReadFeedAsync(feedReader, feedName);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Console.Error.WriteLine($"Error while reading {feedName}: {e}");
                     return Enumerable.Empty<FeedItem>();
                 }
             }

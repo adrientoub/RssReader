@@ -3,3 +3,4 @@ obj/
 *.csv
 *.xml
 .vs
+*.opml

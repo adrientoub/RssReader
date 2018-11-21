@@ -25,7 +25,7 @@
                 return;
             }
 
-            feeds.Load();
+            await feeds.LoadAsync();
             var result = feeds.Feeds.Select(async feed =>
             {
                 IEnumerable<FeedItem> items = await feed.ReadItems(parser);
@@ -33,6 +33,7 @@
                 feed.Save();
             });
             await Task.WhenAll(result);
+            Console.WriteLine($"Refreshed at {DateTimeOffset.Now:o}.");
         }
     }
 }

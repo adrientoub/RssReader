@@ -14,7 +14,14 @@
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopAtEntry": false,
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "openOnSessionStart",
+            "logging": {
+                "exceptions": false,
+                "programOutput": true,
+                "engineLogging": false,
+                "moduleLoad": false,
+                "browserStdOut": false
+            }
         },
         {
             "name": ".NET Core Launch (web)",

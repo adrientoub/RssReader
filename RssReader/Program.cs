@@ -40,11 +40,11 @@
             var result = feeds.Feeds.Select(async feed =>
             {
                 IEnumerable<FeedItem> items = await feed.ReadItems(parser);
-                feed.Add(items, item => Console.WriteLine($"{item.Date:o}: {item.FeedName} - {item.Title} - {item.Link}"));
+                feed.Add(items, item => Console.WriteLine($"{item.Date:s}: {item.FeedName} - {item.Title} - {item.Link}"));
                 feed.Save();
             });
             await Task.WhenAll(result);
-            Console.WriteLine($"Refreshed at {DateTimeOffset.Now:o}.");
+            Console.WriteLine($"Refreshed at {DateTimeOffset.Now:s}.");
         }
     }
 }

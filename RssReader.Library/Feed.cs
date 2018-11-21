@@ -85,7 +85,7 @@ namespace RssReader.Library
             _uniqueItems = Items.ToDictionary(item => item.Guid);
         }
 
-        public void Add(IEnumerable<FeedItem> feedItems)
+        public void Add(IEnumerable<FeedItem> feedItems, Action<FeedItem> toDoForNew)
         {
             // TODO: load dynamically months where data is to be added.
             foreach (var item in feedItems)
@@ -98,6 +98,7 @@ namespace RssReader.Library
                 {
                     _toSave.Add((item.Date.Year, item.Date.Month));
                     _uniqueItems.Add(item.Guid, item);
+                    toDoForNew(item);
                 }
             }
 

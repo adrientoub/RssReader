@@ -26,6 +26,15 @@
             }
 
             await feeds.LoadAsync();
+            while (true)
+            {
+                await RefreshAsync(parser, feeds);
+                await Task.Delay(TimeSpan.FromMinutes(5));
+            }
+        }
+
+        private static async Task RefreshAsync(IFeedParser parser, FeedList feeds)
+        {
             var result = feeds.Feeds.Select(async feed =>
             {
                 IEnumerable<FeedItem> items = await feed.ReadItems(parser);

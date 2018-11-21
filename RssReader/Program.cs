@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using RssReader.Library;
@@ -26,6 +27,7 @@
             }
 
             await feeds.LoadAsync();
+            Console.SetError(TextWriter.Null);
             while (true)
             {
                 await RefreshAsync(parser, feeds);

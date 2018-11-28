@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using RssReader.Library;
     using RssReader.Library.FeedParsers;
+    using RssReader.Library.Storage;
 
     public class Program
     {
@@ -14,10 +15,11 @@
         {
             // IFeedParser parser = new CustomFeedParser();
             IFeedParser parser = new MicrosoftFeedParser();
-            FeedList feeds;
+            IFeedStorage storage = new LocalFilesystemStorage();
+            List<Feed> feeds;
             try
             {
-                feeds = FeedList.ReadFeeds("rss.csv");
+                feeds = await storage.ReadFeedListFromCsvAsync("rss.csv");
             }
             catch (Exception e)
             {
@@ -26,22 +28,22 @@
                 return;
             }
 
-            await feeds.LoadAsync();
+            await storage.LoadFeedItemsAsync(feeds);
             Console.SetError(TextWriter.Null);
             while (true)
             {
-                await RefreshAsync(parser, feeds);
+                await RefreshAsync(parser, storage, feeds);
                 await Task.Delay(TimeSpan.FromMinutes(5));
             }
         }
 
-        private static async Task RefreshAsync(IFeedParser parser, FeedList feeds)
+        private static async Task RefreshAsync(IFeedParser parser, IFeedStorage storage, List<Feed> feeds)
         {
-            var result = feeds.Feeds.Select(async feed =>
+            var result = feeds.Select(async feed =>
             {
-                IEnumerable<FeedItem> items = await feed.ReadItems(parser);
+                IEnumerable<FeedItem> items = await feed.ReadItemsAsync(parser);
                 feed.Add(items, item => Console.WriteLine($"{item.Date:s}: {item.FeedName} - {item.Title} - {item.Link}"));
-                feed.Save();
+                await feed.SaveAsync(storage);
             });
             await Task.WhenAll(result);
             Console.WriteLine($"Refreshed at {DateTimeOffset.Now:s}.");

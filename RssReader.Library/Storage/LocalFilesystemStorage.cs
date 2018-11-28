@@ -19,14 +19,14 @@
 
         public Task<List<Feed>> ReadFeedListFromOpmlAsync(string path)
         {
-            var fileContent = File.ReadAllText(path);
+            var fileContent = File.ReadAllText(Path.Combine(_basePath, path));
             List<FeedInfo> records = OpmlParser.ParseFeed(fileContent);
             return Task.FromResult(records.Select(info => new Feed(info)).ToList());
         }
 
         public Task<List<Feed>> ReadFeedListFromCsvAsync(string path)
         {
-            using (var fileReader = File.OpenText(path))
+            using (var fileReader = File.OpenText(Path.Combine(_basePath, path)))
             {
                 using (var csvReader = new CsvReader(fileReader))
                 {
@@ -38,7 +38,7 @@
 
         public Task SaveFeedListToCsvAsync(string path, List<Feed> feeds)
         {
-            using (StreamWriter fileWriter = File.CreateText(path))
+            using (StreamWriter fileWriter = File.CreateText(Path.Combine(_basePath, path)))
             {
                 using (var csvWriter = new CsvWriter(fileWriter))
                 {
@@ -69,7 +69,7 @@
 
         private void CreateDirectories(string feedPath)
         {
-            string directoryName = Path.GetDirectoryName(feedPath);
+            string directoryName = Path.GetDirectoryName(Path.Combine(_basePath, feedPath));
             if (directoryName != null)
             {
                 Directory.CreateDirectory(directoryName);
@@ -130,7 +130,7 @@
 
         private string FeedPath(int year, int month, string cleanName)
         {
-            return $"{year:D4}/{month:D2}/{cleanName}.csv";
+            return Path.Combine(_basePath, $"{year:D4}/{month:D2}/{cleanName}.csv");
         }
 
         #endregion

@@ -127,5 +127,10 @@ namespace RssReader.Library
         {
             return $"{year:D4}-{month:D2}";
         }
+
+        public void MarkAllAsRead()
+        {
+            Items.ForEach(item => item.Read = true);
+        }
     }
 }

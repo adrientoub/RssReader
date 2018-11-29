@@ -7,11 +7,18 @@ namespace RssReader.UWP
 {
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using Windows.ApplicationModel.Core;
     using Windows.Foundation;
+    using Windows.Storage;
+    using Windows.System;
+    using Windows.System.Threading;
     using Windows.UI.Core;
+    using Windows.UI.Xaml;
+    using Windows.UI.Xaml.Data;
+    using Windows.UI.Xaml.Input;
     using RssReader.Library;
     using RssReader.Library.FeedParsers;
     using RssReader.Library.Storage;
@@ -28,7 +35,7 @@ namespace RssReader.UWP
         public MainPage()
         {
             InitializeComponent();
-            var folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            var folder = ApplicationData.Current.LocalFolder;
             var storage = new LocalFilesystemStorage();
             try
             {
@@ -40,7 +47,7 @@ namespace RssReader.UWP
                 return;
             }
             storage = new LocalFilesystemStorage(folder.Path);
-            IAsyncAction wi = Windows.System.Threading.ThreadPool.RunAsync(async workItem =>
+            IAsyncAction wi = ThreadPool.RunAsync(async workItem =>
             {
                 await storage.LoadFeedItemsAsync(Feeds);
                 RefreshUi();
@@ -48,7 +55,7 @@ namespace RssReader.UWP
                 await RefreshAsync(parser, storage, Feeds);
                 RefreshUi();
             });
-            Windows.System.Threading.ThreadPoolTimer.CreatePeriodicTimer(async action =>
+            ThreadPoolTimer.CreatePeriodicTimer(async action =>
             {
                 IFeedParser parser = new MicrosoftFeedParser();
                 await RefreshAsync(parser, storage, Feeds);
@@ -58,21 +65,26 @@ namespace RssReader.UWP
 
         private void RefreshUi()
         {
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+            var items = new List<FeedItem>();
+            foreach (var feed in Feeds)
+            {
+                foreach (var feedItem in feed.Items)
+                {
+                    items.Add(feedItem);
+                }
+            }
+
+            var sorted = items.OrderBy(item => item.Date).ToList();
+            var launched = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                 CoreDispatcherPriority.High,
                 new DispatchedHandler(() =>
                 {
                     Items.Clear();
-                    foreach (var feed in Feeds)
+                    foreach (var item in sorted)
                     {
-                        foreach (var feedItem in feed.Items)
-                        {
-                            Items.Add(feedItem);
-                        }
+                        Items.Add(item);
                     }
                 }));
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         private static async Task RefreshAsync(IFeedParser parser, IFeedStorage storage, List<Feed> feeds)
@@ -84,6 +96,32 @@ namespace RssReader.UWP
                 await feed.SaveAsync(storage);
             });
             await Task.WhenAll(result);
+        }
+
+        private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
+        {
+            FeedItem item = (FeedItem)e.ClickedItem;
+            item.Read = true;
+        }
+
+        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var frameworkElement = (FrameworkElement)e.OriginalSource;
+            var item = (FeedItem)frameworkElement.DataContext;
+
+            var launched = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                CoreDispatcherPriority.Low,
+                new DispatchedHandler(async () =>
+                {
+                    await Windows.System.Launcher.LaunchUriAsync(new Uri(item.Link));
+                }));
+        }
+
+        private void UIElement_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.G)
+            {
+            }
         }
     }
 }

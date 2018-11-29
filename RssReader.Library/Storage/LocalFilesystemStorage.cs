@@ -100,8 +100,12 @@
             {
                 using (var csvReader = new CsvReader(fileReader))
                 {
-                    var records = csvReader.GetRecords<FeedItem>();
-                    feed.Items.AddRange(records);
+                    IEnumerable<FeedItem> records = csvReader.GetRecords<FeedItem>();
+                    feed.Items.AddRange(records.Select(item =>
+                    {
+                        item.SetFeed(feed);
+                        return item;
+                    }));
                 }
             }
 

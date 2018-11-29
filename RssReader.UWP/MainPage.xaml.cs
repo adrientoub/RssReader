@@ -9,6 +9,7 @@ namespace RssReader.UWP
     using System.Collections.ObjectModel;
     using System.Globalization;
     using System.Linq;
+    using System.ServiceModel.Channels;
     using System.Threading.Tasks;
     using Windows.ApplicationModel.Core;
     using Windows.Foundation;
@@ -30,7 +31,10 @@ namespace RssReader.UWP
     {
         public ObservableCollection<FeedItem> Items { get; }
             = new ObservableCollection<FeedItem>();
+
         private List<Feed> Feeds;
+
+        private IFeedStorage _storage;
 
         public MainPage()
         {
@@ -46,19 +50,20 @@ namespace RssReader.UWP
                 Console.Error.WriteLine(e);
                 return;
             }
-            storage = new LocalFilesystemStorage(folder.Path);
+
+            _storage = new LocalFilesystemStorage(folder.Path);
             IAsyncAction wi = ThreadPool.RunAsync(async workItem =>
             {
-                await storage.LoadFeedItemsAsync(Feeds);
+                await _storage.LoadFeedItemsAsync(Feeds);
                 RefreshUi();
                 IFeedParser parser = new MicrosoftFeedParser();
-                await RefreshAsync(parser, storage, Feeds);
+                await RefreshAsync(parser, _storage, Feeds);
                 RefreshUi();
             });
             ThreadPoolTimer.CreatePeriodicTimer(async action =>
             {
                 IFeedParser parser = new MicrosoftFeedParser();
-                await RefreshAsync(parser, storage, Feeds);
+                await RefreshAsync(parser, _storage, Feeds);
                 RefreshUi();
             }, TimeSpan.FromMinutes(5));
         }
@@ -92,7 +97,8 @@ namespace RssReader.UWP
             var result = feeds.Select(async feed =>
             {
                 IEnumerable<FeedItem> items = await feed.ReadItemsAsync(parser);
-                feed.Add(items, item => Console.WriteLine($"{item.Date:s}: {item.FeedName} - {item.Title} - {item.Link}"));
+                feed.Add(items,
+                    item => Console.WriteLine($"{item.Date:s}: {item.FeedName} - {item.Title} - {item.Link}"));
                 await feed.SaveAsync(storage);
             });
             await Task.WhenAll(result);
@@ -100,14 +106,14 @@ namespace RssReader.UWP
 
         private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
         {
-            FeedItem item = (FeedItem)e.ClickedItem;
-            item.Read = true;
+            FeedItem item = (FeedItem) e.ClickedItem;
+            item.MarkAsRead();
         }
 
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var frameworkElement = (FrameworkElement)e.OriginalSource;
-            var item = (FeedItem)frameworkElement.DataContext;
+            var frameworkElement = (FrameworkElement) e.OriginalSource;
+            var item = (FeedItem) frameworkElement.DataContext;
 
             var launched = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                 CoreDispatcherPriority.Low,
@@ -121,6 +127,80 @@ namespace RssReader.UWP
         {
             if (e.Key == VirtualKey.G)
             {
+                NextUnread(sender, true);
+            }
+            else if (e.Key == VirtualKey.T)
+            {
+                NextUnread(sender, false);
+            }
+            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
+            if ((ctrl & CoreVirtualKeyStates.Down) != 0 && e.Key == VirtualKey.S)
+            {
+                Feeds.ForEach(feed => feed.SaveAsync(_storage));
+            }
+            if ((ctrl & CoreVirtualKeyStates.Down) != 0 && e.Key == VirtualKey.R)
+            {
+                RefreshUi();
+            }
+        }
+
+        private void NextUnread(object sender, bool down)
+        {
+            var listView = (ListView)sender;
+            int index = listView.SelectedIndex;
+            if (down)
+            {
+                if (index < 0)
+                {
+                    index = 0;
+                }
+                for (var i = index; i < Items.Count; i++)
+                {
+                    if (!Items[i].Read)
+                    {
+                        listView.SelectedIndex = i;
+                        listView.ScrollIntoView(Items[i]);
+                        Items[i].MarkAsRead();
+                        return;
+                    }
+                }
+                for (var i = 0; i < index; i++)
+                {
+                    if (!Items[i].Read)
+                    {
+                        listView.SelectedIndex = i;
+                        listView.ScrollIntoView(Items[i]);
+                        Items[i].MarkAsRead();
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                if (index < 0)
+                {
+                    index = Items.Count - 1;
+                }
+                for (var i = index; i >= 0; i--)
+                {
+                    if (!Items[i].Read)
+                    {
+                        listView.SelectedIndex = i;
+                        listView.ScrollIntoView(Items[i]);
+                        Items[i].MarkAsRead();
+                        return;
+                    }
+                }
+                for (var i = Items.Count - 1; i >= index; i--)
+                {
+                    if (!Items[i].Read)
+                    {
+                        listView.SelectedIndex = i;
+                        listView.ScrollIntoView(Items[i]);
+                        Items[i].MarkAsRead();
+                        return;
+                    }
+                }
             }
         }
     }

@@ -89,9 +89,13 @@ namespace RssReader.Library
             // TODO: load dynamically months where data is to be added.
             foreach (var item in feedItems)
             {
+                item.SetFeed(this);
                 if (_uniqueItems.ContainsKey(item.Guid))
                 {
-                    _uniqueItems[item.Guid] = item;
+                    if (_uniqueItems[item.Guid] != item)
+                    {
+                        _uniqueItems[item.Guid] = item;
+                    }
                 }
                 else
                 {
@@ -130,7 +134,15 @@ namespace RssReader.Library
 
         public void MarkAllAsRead()
         {
-            Items.ForEach(item => item.Read = true);
+            foreach (var feedItem in Items)
+            {
+                feedItem.MarkAsRead();
+            }
+        }
+
+        public void SetSave(int year, int month)
+        {
+            _toSave.Add((year, month));
         }
     }
 }

@@ -113,9 +113,10 @@
             List<(int year, int month)> monthsToLoad = new List<(int year, int month)>();
             foreach (int year in Enumerable.Range(2010, 10)) // Be less specific
             {
-                if (Directory.Exists(year.ToString()))
+                var directoryPath = Path.Combine(_basePath, year.ToString());
+                if (Directory.Exists(directoryPath))
                 {
-                    foreach (string enumerateDirectory in Directory.EnumerateDirectories(year.ToString()))
+                    foreach (string enumerateDirectory in Directory.EnumerateDirectories(directoryPath))
                     {
                         string dirName = Path.GetFileName(enumerateDirectory);
                         if (int.TryParse(dirName, out int month))

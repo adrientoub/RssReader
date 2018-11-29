@@ -28,7 +28,8 @@ namespace RssReader.UWP
         public MainPage()
         {
             InitializeComponent();
-            var storage = new LocalFilesystemStorage("D:\\projects\\RssLocal");
+            var folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            var storage = new LocalFilesystemStorage();
             try
             {
                 Feeds = storage.ReadFeedListFromCsvAsync("rss.csv").Result;
@@ -36,8 +37,9 @@ namespace RssReader.UWP
             catch (Exception e)
             {
                 Console.Error.WriteLine(e);
+                return;
             }
-
+            storage = new LocalFilesystemStorage(folder.Path);
             IAsyncAction wi = Windows.System.Threading.ThreadPool.RunAsync(async workItem =>
             {
                 await storage.LoadFeedItemsAsync(Feeds);

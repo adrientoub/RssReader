@@ -56,10 +56,10 @@
                         items.Add(new FeedItem()
                         {
                             Date = item.LastUpdated == default(DateTimeOffset) ? item.Published : item.LastUpdated,
-                            Description = item.Description.Trim(),
+                            Description = item.Description?.Trim(),
                             FeedName = feedName,
                             Guid = item.Id,
-                            Title = item.Title.Trim(),
+                            Title = item.Title?.Trim(),
                             Link = item.Links.FirstOrDefault()?.Uri.ToString(),
                         });
                         break;

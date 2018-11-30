@@ -3,6 +3,7 @@ namespace RssReader.Library
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net;
     using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
@@ -30,14 +31,19 @@ namespace RssReader.Library
 
         public async Task<string> ReadFeedAsync()
         {
+            return await ReadFeedAsync(Info.Url);
+        }
+
+        private async Task<string> ReadFeedAsync(string url)
+        {
             HttpResponseMessage result;
             try
             {
-                result = await Client.GetAsync(Info.Url);
+                result = await Client.GetAsync(url);
             }
             catch (HttpRequestException e)
             {
-                Console.Error.WriteLine($"Impossible to read from {Info.Name}: {Info.Url} - {e.Message}.");
+                Console.Error.WriteLine($"Impossible to read from {Info.Name}: {url} - {e.Message}.");
                 return null;
             }
 
@@ -53,6 +59,15 @@ namespace RssReader.Library
                 }
             }
 
+            if (result.StatusCode == HttpStatusCode.Moved || result.StatusCode == HttpStatusCode.MovedPermanently)
+            {
+                string newUrl = result.Headers?.Location?.AbsoluteUri;
+                if (newUrl != null)
+                {
+                    Console.Error.WriteLine($"Redirecting feed '{Info.Name}' to {newUrl} because of status code {result.StatusCode} ({(int) result.StatusCode}).");
+                    return await ReadFeedAsync(newUrl);
+                }
+            }
             Console.Error.WriteLine(
                 $"Feed {Info.Name} at {Info.Url} failed with status {result.StatusCode} ({(int)result.StatusCode}).");
             return null;

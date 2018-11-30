@@ -5,18 +5,22 @@
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using CodeHollow.FeedReader;
     using RssReader.Library;
     using RssReader.Library.FeedParsers;
     using RssReader.Library.Storage;
+    using Feed = Library.Feed;
+    using FeedItem = RssReader.Library.FeedItem;
 
     public class Program
     {
         static async Task Main(string[] args)
         {
-            // IFeedParser parser = new CustomFeedParser();
-            IFeedParser parser = new MicrosoftFeedParser();
             IFeedStorage storage = new LocalFilesystemStorage();
             List<Feed> feeds;
+//            IFeedParser parser = new CustomFeedParser();
+            IFeedParser parser = new CodeHollowFeedParser();
+//            IFeedParser parser = new MicrosoftFeedParser();
             try
             {
                 feeds = await storage.ReadFeedListFromCsvAsync("rss.csv");

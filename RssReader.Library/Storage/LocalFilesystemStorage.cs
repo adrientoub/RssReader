@@ -114,13 +114,14 @@
 
         private List<(int year, int month)> FindMonthsToLoad()
         {
+            var directories = Directory.EnumerateDirectories(string.IsNullOrEmpty(_basePath) ? ".": _basePath);
             List<(int year, int month)> monthsToLoad = new List<(int year, int month)>();
-            foreach (int year in Enumerable.Range(2010, 10)) // Be less specific
+            foreach (var directory in directories)
             {
-                var directoryPath = Path.Combine(_basePath, year.ToString());
-                if (Directory.Exists(directoryPath))
+                var directoryName = Path.GetFileName(directory);
+                if (int.TryParse(directoryName, out int year))
                 {
-                    foreach (string enumerateDirectory in Directory.EnumerateDirectories(directoryPath))
+                    foreach (string enumerateDirectory in Directory.EnumerateDirectories(directory))
                     {
                         string dirName = Path.GetFileName(enumerateDirectory);
                         if (int.TryParse(dirName, out int month))

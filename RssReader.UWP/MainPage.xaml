@@ -8,16 +8,21 @@
     xmlns:library="using:RssReader.Library"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-    <ListView ItemsSource="{x:Bind Items}" IsItemClickEnabled="True" ItemClick="ListViewBase_OnItemClick" DoubleTapped="UIElement_OnDoubleTapped" IsDoubleTapEnabled="True" KeyDown="UIElement_OnKeyDown">
-        <ListView.ItemTemplate>
-            <DataTemplate x:DataType="library:FeedItem">
-                <StackPanel>
-                    <TextBlock Text="{x:Bind Title}" FontWeight="{x:Bind local:HelperFunctions.ConvertReadToFontWeight(Read)}" />
-                    <TextBlock Text="{x:Bind FeedName}" />
-                </StackPanel>
-            </DataTemplate>
-        </ListView.ItemTemplate>
-    </ListView>
-
+    <SplitView IsPaneOpen="True">
+        <SplitView.Pane>
+            <ListView ItemsSource="{x:Bind Items}" x:Name="ItemsListView" IsItemClickEnabled="True" ItemClick="ListViewBase_OnItemClick" DoubleTapped="UIElement_OnDoubleTapped" IsDoubleTapEnabled="True" KeyDown="UIElement_OnKeyDown">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="library:FeedItem">
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind Title}" FontWeight="{x:Bind local:HelperFunctions.ConvertReadToFontWeight(Read)}" />
+                            <TextBlock Text="{x:Bind FeedName}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </SplitView.Pane>
+        <SplitView.Content>
+            <WebView Source="{x:Bind local:HelperFunctions.FeedItemToUri(ItemsListView.SelectedItem), Mode=OneWay}" />
+        </SplitView.Content>
+    </SplitView>
 </Page>

@@ -96,7 +96,34 @@ namespace RssReader.Library
 
         internal void RebuildDictionary()
         {
-            _uniqueItems = Items.ToDictionary(item => item.Guid);
+            var newDictionary = new Dictionary<string, FeedItem>();
+            HashSet<FeedItem> toRemove = new HashSet<FeedItem>();
+            foreach (var item in Items)
+            {
+                if (newDictionary.TryGetValue(item.Guid, out FeedItem alreadySaved))
+                {
+                    // If the Guid is already present we will remove the oldest occurence
+                    if (alreadySaved.Date > item.Date)
+                    {
+                        toRemove.Add(item);
+                        continue;
+                    }
+                    toRemove.Add(alreadySaved);
+                }
+                newDictionary[item.Guid] = item;
+            }
+
+            if (toRemove.Any())
+            {
+                foreach (var itemToRemove in toRemove)
+                {
+                    _toSave.Add((itemToRemove.Date.Year, itemToRemove.Date.Month));
+                }
+                int removed = Items.RemoveAll(i => toRemove.Contains(i));
+                Console.WriteLine($"Removed {removed} duplicate items in feed '{Info.Name}'.");
+            }
+
+            _uniqueItems = newDictionary;
         }
 
         public void Add(IEnumerable<FeedItem> feedItems, Action<FeedItem> toDoForNew)

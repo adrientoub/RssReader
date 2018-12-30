@@ -1,14 +1,19 @@
 ﻿namespace RssReader.Library.Storage
 {
+    using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using CsvHelper;
+    using CsvHelper.Configuration;
 
     public class LocalFilesystemStorage : IFeedStorage
     {
-        private string _basePath;
+        private readonly string _basePath;
+
+        private readonly Configuration _csvConfiguration = new Configuration(CultureInfo.InvariantCulture);
 
         public LocalFilesystemStorage(string basePath = "")
         {
@@ -28,7 +33,7 @@
         {
             using (var fileReader = File.OpenText(Path.Combine(_basePath, path)))
             {
-                using (var csvReader = new CsvReader(fileReader))
+                using (var csvReader = new CsvReader(fileReader, _csvConfiguration))
                 {
                     var records = csvReader.GetRecords<FeedInfo>();
                     return Task.FromResult(records.Select(info => new Feed(info)).ToList());
@@ -40,7 +45,7 @@
         {
             using (StreamWriter fileWriter = File.CreateText(Path.Combine(_basePath, path)))
             {
-                using (var csvWriter = new CsvWriter(fileWriter))
+                using (var csvWriter = new CsvWriter(fileWriter, _csvConfiguration))
                 {
                     csvWriter.WriteRecords(feeds.Select(feed => feed.Info));
                 }
@@ -59,7 +64,7 @@
             CreateDirectories(feedPath);
             using (var fileWriter = File.CreateText(feedPath))
             {
-                using (var csvWriter = new CsvWriter(fileWriter))
+                using (var csvWriter = new CsvWriter(fileWriter, _csvConfiguration))
                 {
                     csvWriter.WriteRecords(feedItems);
                 }
@@ -98,7 +103,7 @@
 
             using (var fileReader = File.OpenText(feedPath))
             {
-                using (var csvReader = new CsvReader(fileReader))
+                using (var csvReader = new CsvReader(fileReader, _csvConfiguration))
                 {
                     var records = csvReader.GetRecords<FeedItem>();
                     feed.Items.AddRange(records);

@@ -106,8 +106,10 @@ namespace RssReader.Library
                     if (alreadySaved.Date > item.Date)
                     {
                         toRemove.Add(item);
+                        _toSave.Add((alreadySaved.Date.Year, alreadySaved.Date.Month));
                         continue;
                     }
+                    _toSave.Add((item.Date.Year, item.Date.Month));
                     toRemove.Add(alreadySaved);
                 }
                 newDictionary[item.Guid] = item;
@@ -151,16 +153,16 @@ namespace RssReader.Library
 
         public async Task SaveAsync(IFeedStorage storage)
         {
-            IEnumerable<IGrouping<(int year, int month), FeedItem>> grouped =
-                Items.GroupBy(item => (item.Date.Year, item.Date.Month));
-            foreach (IGrouping<(int year, int month), FeedItem> feedItems in
-                     grouped.Where(group => _toSave.Contains((group.Key.year, group.Key.month))))
+            ILookup<(int month, int year), FeedItem> grouped =
+                Items.ToLookup(item => (item.Date.Year, item.Date.Month));
+            foreach (var keyToSave in _toSave)
             {
-                if (!LoadedMonths.Contains(MonthKeyName(feedItems.Key.year, feedItems.Key.month)))
+                IEnumerable<FeedItem> feedItems = grouped[keyToSave];
+                if (!LoadedMonths.Contains(MonthKeyName(keyToSave.year, keyToSave.month)))
                 {
                     // Load
                 }
-                await storage.SaveFeedItemsAsync(feedItems, Info);
+                await storage.SaveFeedItemsAsync(keyToSave.year, keyToSave.month, feedItems, Info);
             }
             _toSave.Clear();
         }

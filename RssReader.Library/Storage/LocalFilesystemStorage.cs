@@ -58,9 +58,9 @@
 
         #region FeedItems
 
-        public Task SaveFeedItemsAsync(IGrouping<(int year, int month), FeedItem> feedItems, FeedInfo info)
+        public Task SaveFeedItemsAsync(int year, int month, IEnumerable<FeedItem> feedItems, FeedInfo info)
         {
-            string feedPath = FeedPath(feedItems.Key.year, feedItems.Key.month, info.CleanName);
+            string feedPath = FeedPath(year, month, info.CleanName);
             CreateDirectories(feedPath);
             using (var fileWriter = File.CreateText(feedPath))
             {

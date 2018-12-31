@@ -30,9 +30,11 @@
         Task<List<Feed>> ReadFeedListFromOpmlAsync(string path);
 
         /// <summary>Save back a collection of feed items to the storage.</summary>
+        /// <param name="year">The year of all the items.</param>
+        /// <param name="month">The month of all the items.</param>
         /// <param name="feedItems">The items to save.</param>
         /// <param name="info">The feed they are related to.</param>
-        Task SaveFeedItemsAsync(IGrouping<(int year, int month), FeedItem> feedItems, FeedInfo info);
+        Task SaveFeedItemsAsync(int year, int month, IEnumerable<FeedItem> feedItems, FeedInfo info);
 
         /// <summary>Save a list of feeds in a CSV that can be read by the <see cref="ReadFeedListFromCsvAsync"/> method.</summary>
         /// <param name="path">The path.</param>

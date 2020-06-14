@@ -13,10 +13,14 @@ namespace RssReader.Library.FeedParsers
         private const string NamespaceFilter = @"xmlns=""([^""]+)""|xsi(:\w+)?=""([^""]+)""";
         private static readonly Regex NamespaceRegex = new Regex(NamespaceFilter);
 
-        public async Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string feedName)
+        public async Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string? feedName)
         {
-            Directory.CreateDirectory("output");
-            File.WriteAllText($"output/{Regex.Replace(feedName, @"[^A-Za-z0-9-]+", "")}.xml", content);
+            // Should always be true
+            if (!string.IsNullOrEmpty(feedName))
+            {
+                Directory.CreateDirectory("output");
+                File.WriteAllText($"output/{Regex.Replace(feedName, @"[^A-Za-z0-9-]+", "")}.xml", content);
+            }
             await Task.Yield();
             var filtered = NamespaceRegex.Replace(content, "");
             var xmlDocument = new XmlDocument();
@@ -44,7 +48,7 @@ namespace RssReader.Library.FeedParsers
             return Enumerable.Empty<FeedItem>();
         }
 
-        private static List<FeedItem> ParseAtom(XmlDocument xmlDocument, string feedName)
+        private static List<FeedItem> ParseAtom(XmlDocument xmlDocument, string? feedName)
         {
             XmlNodeList xmlNodeList = xmlDocument.GetElementsByTagName("entry");
             List<FeedItem> feedItems = new List<FeedItem>();
@@ -55,7 +59,7 @@ namespace RssReader.Library.FeedParsers
                 var date = entry.SelectSingleNode("published") ?? entry.SelectSingleNode("updated");
                 var guid = entry.SelectSingleNode("id");
                 var link = entry.SelectSingleNode("link");
-                string linkText = null;
+                string? linkText = null;
                 if (!DateTimeOffset.TryParse(date.InnerText, out DateTimeOffset parsedDate))
                 {
                     Console.Error.WriteLine($"Impossible to parse date {date.InnerText} in feed {feedName}, defaulting to now.");
@@ -79,7 +83,7 @@ namespace RssReader.Library.FeedParsers
             return feedItems;
         }
 
-        private static List<FeedItem> ParseRss(XmlDocument xmlDocument, string feedName)
+        private static List<FeedItem> ParseRss(XmlDocument xmlDocument, string? feedName)
         {
             XmlNodeList xmlNodeList = xmlDocument.GetElementsByTagName("item");
             List<FeedItem> feedItems = new List<FeedItem>();

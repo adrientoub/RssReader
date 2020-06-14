@@ -29,13 +29,18 @@ namespace RssReader.Library
             Info = feedInfo;
         }
 
-        public async Task<string> ReadFeedAsync()
+        public async Task<string?> ReadFeedAsync()
         {
             return await ReadFeedAsync(Info.Url);
         }
 
-        private async Task<string> ReadFeedAsync(string url)
+        private async Task<string?> ReadFeedAsync(string? url)
         {
+            if (string.IsNullOrEmpty(url))
+            {
+                Console.Error.WriteLine($"No feed URL for feed {Info.Name}.");
+                return null;
+            }
             HttpResponseMessage result;
             try
             {
@@ -61,7 +66,7 @@ namespace RssReader.Library
 
             if (result.StatusCode == HttpStatusCode.Moved || result.StatusCode == HttpStatusCode.MovedPermanently)
             {
-                string newUrl = result.Headers?.Location?.AbsoluteUri;
+                string? newUrl = result.Headers?.Location?.AbsoluteUri;
                 if (newUrl != null)
                 {
                     Console.Error.WriteLine($"Redirecting feed '{Info.Name}' to {newUrl} because of status code {result.StatusCode} ({(int) result.StatusCode}).");
@@ -75,7 +80,7 @@ namespace RssReader.Library
 
         public async Task<IEnumerable<FeedItem>> ReadItemsAsync(IFeedParser feedParser)
         {
-            string feed;
+            string? feed;
             try
             {
                 feed = await ReadFeedAsync();
@@ -100,6 +105,7 @@ namespace RssReader.Library
             HashSet<FeedItem> toRemove = new HashSet<FeedItem>();
             foreach (var item in Items)
             {
+                item.Guid ??= item.GenerateNotNullableGuid();
                 if (newDictionary.TryGetValue(item.Guid, out FeedItem alreadySaved))
                 {
                     // If the Guid is already present we will remove the oldest occurence
@@ -133,6 +139,7 @@ namespace RssReader.Library
             // TODO: load dynamically months where data is to be added.
             foreach (var item in feedItems)
             {
+                item.Guid ??= item.GenerateNotNullableGuid();
                 if (_uniqueItems.ContainsKey(item.Guid))
                 {
                     _uniqueItems[item.Guid] = item;

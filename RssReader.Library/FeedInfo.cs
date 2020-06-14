@@ -5,11 +5,11 @@ namespace RssReader.Library
 
     public class FeedInfo
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string DisplayName { get; set; }
+        public string? DisplayName { get; set; }
 
-        public string Url { get; set; }
+        public string? Url { get; set; }
 
         private static readonly Regex NameCleaner = new Regex(@"[^A-Za-z0-9-]+");
 

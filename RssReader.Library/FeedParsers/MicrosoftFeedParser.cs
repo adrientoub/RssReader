@@ -13,7 +13,7 @@
     public class MicrosoftFeedParser : IFeedParser
     {
         /// <inheritdoc />
-        public async Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string feedName)
+        public async Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string? feedName)
         {
             using var xmlReader = XmlReader.Create(new StringReader(content), new XmlReaderSettings() { Async = true });
             try
@@ -37,7 +37,7 @@
             }
         }
 
-        private static async Task<IEnumerable<FeedItem>> ReadFeedAsync(ISyndicationFeedReader feedReader, string feedName)
+        private static async Task<IEnumerable<FeedItem>> ReadFeedAsync(ISyndicationFeedReader feedReader, string? feedName)
         {
             List<FeedItem> items = new List<FeedItem>();
             while (await feedReader.Read())
@@ -53,7 +53,7 @@
                         ISyndicationItem item = await feedReader.ReadItem();
                         items.Add(new FeedItem()
                         {
-                            Date = item.LastUpdated == default(DateTimeOffset) ? item.Published : item.LastUpdated,
+                            Date = item.LastUpdated == default ? item.Published : item.LastUpdated,
                             Description = item.Description.Trim(),
                             FeedName = feedName,
                             Guid = item.Id,

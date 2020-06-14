@@ -8,7 +8,7 @@
 
     public class CodeHollowFeedParser: IFeedParser
     {
-        public Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string feedName)
+        public Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string? feedName)
         {
             List<FeedItem> items = new List<FeedItem>();
             Feed feed;

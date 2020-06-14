@@ -11,7 +11,7 @@
     {
         public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
         {
-            string text = value as string;
+            string? text = value as string;
             if (string.IsNullOrEmpty(text))
             {
                 return "";
@@ -25,7 +25,7 @@
             return Convert.ToBase64String(memoryStream.ToArray());
         }
 
-        public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
+        public object ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData)
         {
             if (string.IsNullOrEmpty(text))
             {

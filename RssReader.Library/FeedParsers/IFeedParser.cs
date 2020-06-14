@@ -5,6 +5,6 @@
 
     public interface IFeedParser
     {
-        Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string feedName);
+        Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string? feedName);
     }
 }

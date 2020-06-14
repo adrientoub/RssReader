@@ -17,14 +17,12 @@
                 return "";
             }
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(text);
-            using (var memoryStream = new MemoryStream())
+            using var memoryStream = new MemoryStream();
+            using (GZipStream zipStream = new GZipStream(memoryStream, CompressionMode.Compress))
             {
-                using (GZipStream zipStream = new GZipStream(memoryStream, CompressionMode.Compress))
-                {
-                    zipStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-                }
-                return Convert.ToBase64String(memoryStream.ToArray());
+                zipStream.Write(plainTextBytes, 0, plainTextBytes.Length);
             }
+            return Convert.ToBase64String(memoryStream.ToArray());
         }
 
         public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
@@ -35,15 +33,13 @@
             }
             var outputStream = new MemoryStream();
             var plainTextBytes = Convert.FromBase64String(text);
-            using (var memoryStream = new MemoryStream(plainTextBytes))
+            using var memoryStream = new MemoryStream(plainTextBytes);
+            using (GZipStream zipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
             {
-                using (GZipStream zipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
-                {
-                    zipStream.CopyTo(outputStream);
-                }
-
-                return System.Text.Encoding.UTF8.GetString(outputStream.ToArray());
+                zipStream.CopyTo(outputStream);
             }
+
+            return System.Text.Encoding.UTF8.GetString(outputStream.ToArray());
         }
     }
 }

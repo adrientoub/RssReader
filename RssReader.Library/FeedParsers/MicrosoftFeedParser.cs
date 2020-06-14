@@ -15,27 +15,25 @@
         /// <inheritdoc />
         public async Task<IEnumerable<FeedItem>> ParseFeedAsync(string content, string feedName)
         {
-            using (var xmlReader = XmlReader.Create(new StringReader(content), new XmlReaderSettings() { Async = true }))
+            using var xmlReader = XmlReader.Create(new StringReader(content), new XmlReaderSettings() { Async = true });
+            try
             {
-                try
-                {
-                    RssFeedReader feedReader = new RssFeedReader(xmlReader);
-                    return await ReadFeedAsync(feedReader, feedName);
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-                try
-                {
-                    AtomFeedReader feedReader = new AtomFeedReader(xmlReader);
-                    return await ReadFeedAsync(feedReader, feedName);
-                }
-                catch (Exception)
-                {
-                    Console.Error.WriteLine($"Error while reading {feedName}: Feed invalid as RSS and Atom.");
-                    return Enumerable.Empty<FeedItem>();
-                }
+                RssFeedReader feedReader = new RssFeedReader(xmlReader);
+                return await ReadFeedAsync(feedReader, feedName);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            try
+            {
+                AtomFeedReader feedReader = new AtomFeedReader(xmlReader);
+                return await ReadFeedAsync(feedReader, feedName);
+            }
+            catch (Exception)
+            {
+                Console.Error.WriteLine($"Error while reading {feedName}: Feed invalid as RSS and Atom.");
+                return Enumerable.Empty<FeedItem>();
             }
         }
 

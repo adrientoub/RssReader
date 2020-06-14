@@ -31,14 +31,10 @@
 
         public Task<List<Feed>> ReadFeedListFromCsvAsync(string path)
         {
-            using (var fileReader = File.OpenText(Path.Combine(_basePath, path)))
-            {
-                using (var csvReader = new CsvReader(fileReader, _csvConfiguration))
-                {
-                    var records = csvReader.GetRecords<FeedInfo>();
-                    return Task.FromResult(records.Select(info => new Feed(info)).ToList());
-                }
-            }
+            using var fileReader = File.OpenText(Path.Combine(_basePath, path));
+            using var csvReader = new CsvReader(fileReader, _csvConfiguration);
+            var records = csvReader.GetRecords<FeedInfo>();
+            return Task.FromResult(records.Select(info => new Feed(info)).ToList());
         }
 
         public Task SaveFeedListToCsvAsync(string path, List<Feed> feeds)
@@ -46,13 +42,9 @@
             string feedListPath = Path.Combine(_basePath, path);
             try
             {
-                using (StreamWriter fileWriter = File.CreateText(feedListPath))
-                {
-                    using (var csvWriter = new CsvWriter(fileWriter, _csvConfiguration))
-                    {
-                        csvWriter.WriteRecords(feeds.Select(feed => feed.Info));
-                    }
-                }
+                using StreamWriter fileWriter = File.CreateText(feedListPath);
+                using var csvWriter = new CsvWriter(fileWriter, _csvConfiguration);
+                csvWriter.WriteRecords(feeds.Select(feed => feed.Info));
             }
             catch (UnauthorizedAccessException)
             {
@@ -72,19 +64,15 @@
             CreateDirectories(feedPath);
             try
             {
-                using (var fileWriter = File.CreateText(feedPath))
+                using var fileWriter = File.CreateText(feedPath);
+                try
                 {
-                    try
-                    {
-                        using (var csvWriter = new CsvWriter(fileWriter, _csvConfiguration))
-                        {
-                            csvWriter.WriteRecords(feedItems);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.Error.WriteLine($"Could not write CSV to disk: {e}");
-                    }
+                    using var csvWriter = new CsvWriter(fileWriter, _csvConfiguration);
+                    csvWriter.WriteRecords(feedItems);
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"Could not write CSV to disk: {e}");
                 }
             }
             catch (UnauthorizedAccessException)
@@ -123,15 +111,10 @@
                 return Task.CompletedTask;
             }
 
-            using (var fileReader = File.OpenText(feedPath))
-            {
-                using (var csvReader = new CsvReader(fileReader, _csvConfiguration))
-                {
-                    var records = csvReader.GetRecords<FeedItem>();
-                    feed.Items.AddRange(records);
-                }
-            }
-
+            using StreamReader fileReader = File.OpenText(feedPath);
+            using var csvReader = new CsvReader(fileReader, _csvConfiguration);
+            var records = csvReader.GetRecords<FeedItem>();
+            feed.Items.AddRange(records);
             return Task.CompletedTask;
         }
 

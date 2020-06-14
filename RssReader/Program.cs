@@ -62,7 +62,7 @@
 
         private static void DisplayHelp()
         {
-            Console.WriteLine($"Usage: {System.AppDomain.CurrentDomain.FriendlyName} [day|hour|week]");
+            Console.WriteLine($"Usage: {AppDomain.CurrentDomain.FriendlyName} [day|hour|week]");
             Console.WriteLine("  to use in watch mode do not input any argument");
             Console.WriteLine("  to display recent items input the wanted duration");
         }

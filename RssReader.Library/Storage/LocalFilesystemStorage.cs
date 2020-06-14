@@ -13,7 +13,12 @@
     {
         private readonly string _basePath;
 
-        private readonly CsvConfiguration _csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture);
+        /// <summary>
+        /// CsvConfiguration is not thread-safe. This can cause crash when reading lots of feeds in parallel.
+        /// Do not share configurations until this is fixed.
+        /// cf. https://github.com/JoshClose/CsvHelper/issues/1320
+        /// </summary>
+        private CsvConfiguration _csvConfiguration => new CsvConfiguration(CultureInfo.InvariantCulture);
 
         public LocalFilesystemStorage(string basePath = "")
         {

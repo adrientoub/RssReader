@@ -13,7 +13,7 @@
     {
         private readonly string _basePath;
 
-        private readonly Configuration _csvConfiguration = new Configuration(CultureInfo.InvariantCulture);
+        private readonly CsvConfiguration _csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture);
 
         public LocalFilesystemStorage(string basePath = "")
         {

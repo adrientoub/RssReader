@@ -121,7 +121,7 @@
         private List<(int year, int month)> FindMonthsToLoad()
         {
             List<(int year, int month)> monthsToLoad = new List<(int year, int month)>();
-            foreach (int year in Enumerable.Range(2010, 10)) // Be less specific
+            foreach (int year in Enumerable.Range(2010, 15)) // Be less specific
             {
                 if (Directory.Exists(year.ToString()))
                 {

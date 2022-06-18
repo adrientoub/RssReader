@@ -13,10 +13,18 @@
     public class Program
     {
         private const FeedParserType feedParserType = FeedParserType.CodeHollow;
+        private const string feedFilename = "rss.csv";
 
         public static async Task Main(string[] args)
         {
             IFeedStorage storage = new LocalFilesystemStorage();
+            if (!File.Exists(feedFilename))
+            {
+                Console.Error.WriteLine($"Could not find a file named {feedFilename} in the binary directory: {Directory.GetCurrentDirectory()}");
+                Console.Error.WriteLine("Please create it with the format \"Name, DisplayName, Url\".");
+                return;
+            }
+
             List<Feed> feeds;
             try
             {
@@ -28,6 +36,13 @@
                 Console.Read();
                 return;
             }
+
+            if (feeds.Count == 0)
+            {
+                Console.Error.WriteLine($"Loaded 0 feed. Please fill the {feedFilename} with the list of your feeds.");
+            }
+
+            Console.WriteLine($"Loaded {feeds.Count} feeds.");
 
             await storage.LoadFeedItemsAsync(feeds);
             if (args.Length > 0)

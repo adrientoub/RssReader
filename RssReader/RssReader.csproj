@@ -12,4 +12,10 @@
     <ProjectReference Include="..\RssReader.Library\RssReader.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="rss.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
